@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>XylerOS</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="shell">
+    <div id="output"></div>
+    <form id="commandForm">
+      <span>&gt;</span>
+      <input type="text" id="commandInput" autocomplete="off" autofocus placeholder="Type a command...">
+    </form>
+  </div>
+
+<!-- Core OS -->
+<script>
+  const output = document.getElementById("output");
+  const form = document.getElementById("commandForm");
+  const input = document.getElementById("commandInput");
+
+  window.apps = window.apps || {};
+  const openWindows = [];
+
+  const eventBus = {
+    listeners: {},
+    on(event, cb) {
+      this.listeners[event] = this.listeners[event] || [];
+      this.listeners[event].push(cb);
+    },
+    emit(event, data) {
+      (this.listeners[event] || []).forEach(cb => cb(data));
+    }
+  };
+
+  function print(msg) {
+    const line = document.createElement("div");
+    line.textContent = msg;
+    output.appendChild(line);
+    output.scrollTop = output.scrollHeight;
+  }
+
+  const sidebar = document.createElement("div");
+  sidebar.id = "sidebar";
+  sidebar.style.position = "fixed";
+  sidebar.style.top = "0";
+  sidebar.style.left = "0";
+  sidebar.style.bottom = "0";
+  sidebar.style.width = "150px";
+  sidebar.style.background = "#111";
+  sidebar.style.borderRight = "1px solid #333";
+  sidebar.style.display = "flex";
+  sidebar.style.flexDirection = "column";
+  sidebar.style.padding = "10px 5px";
+  sidebar.style.boxSizing = "border-box";
+  sidebar.style.overflowY = "auto";
+  sidebar.style.zIndex = "20000";
+  document.body.appendChild(sidebar);
+
+  let highestZ = 1000;
+
+  function bringToFront(win) {
+    highestZ++;
+    win.style.zIndex = highestZ;
+  }
+
+  function createWindow(title, launchApp) {
+    const win = document.createElement("div");
+    win.className = "window";
+    win.style.left = "170px"; 
+    win.style.top = "50px";
+    win.style.width = "400px";
+    win.style.height = "auto";
+    win.style.position = "absolute";
+    win.style.background = "#222";
+    win.style.border = "1px solid #444";
+    win.style.boxShadow = "2px 2px 10px #000";
+    win.style.zIndex = ++highestZ;
+
+    const taskbarBtn = document.createElement("button");
+    taskbarBtn.textContent = title;
+    taskbarBtn.title = "Minimize/Restore";
+    taskbarBtn.style.margin = "4px 0";
+    taskbarBtn.style.padding = "6px 8px";
+    taskbarBtn.style.background = "#1e1e1e";
+    taskbarBtn.style.color = "#eee";
+    taskbarBtn.style.border = "1px solid #333";
+    taskbarBtn.style.cursor = "pointer";
+    taskbarBtn.style.textAlign = "left";
+    taskbarBtn.style.fontWeight = "bold";
+    taskbarBtn.style.whiteSpace = "nowrap";
+    taskbarBtn.style.overflow = "hidden";
+    taskbarBtn.style.textOverflow = "ellipsis";
+
+    sidebar.appendChild(taskbarBtn);
+
+    let minimized = false;
+
+    taskbarBtn.onclick = () => {
+      if (minimized) {
+        win.style.display = "block";
+        bringToFront(win);
+        minimized = false;
+      } else {
+        win.style.display = "none";
+        minimized = true;
+      }
+    };
+
+    const titlebar = document.createElement("div");
+    titlebar.className = "titlebar";
+    titlebar.style.background = "#333";
+    titlebar.style.padding = "5px";
+    titlebar.style.cursor = "move";
+    titlebar.style.display = "flex";
+    titlebar.style.justifyContent = "space-between";
+    titlebar.style.alignItems = "center";
+
+    const titleSpan = document.createElement("span");
+    titleSpan.textContent = title;
+    titleSpan.style.fontWeight = "bold";
+
+    const closeBtn = document.createElement("button");
+    closeBtn.textContent = "X";
+    closeBtn.style.background = "#900";
+    closeBtn.style.color = "#fff";
+    closeBtn.style.border = "none";
+    closeBtn.style.padding = "2px 5px";
+    closeBtn.style.cursor = "pointer";
+    closeBtn.onclick = () => {
+      document.body.removeChild(win);
+      sidebar.removeChild(taskbarBtn);
+      const index = openWindows.indexOf(win);
+      if (index !== -1) openWindows.splice(index, 1);
+    };
+
+    titlebar.appendChild(titleSpan);
+    titlebar.appendChild(closeBtn);
+    win.appendChild(titlebar);
+
+    const content = document.createElement("div");
+    content.className = "app-content";
+    content.style.padding = "10px";
+    content.style.color = "#ccc";
+    content.style.height = "calc(100% - 30px)";
+    content.style.overflow = "auto";
+    win.appendChild(content);
+
+    let offsetX = 0, offsetY = 0;
+    titlebar.onmousedown = function(e) {
+      bringToFront(win);
+      offsetX = e.clientX - win.offsetLeft;
+      offsetY = e.clientY - win.offsetTop;
+
+      function move(e) {
+        let newX = e.clientX - offsetX;
+        let newY = e.clientY - offsetY;
+
+        newX = Math.max(newX, 150);
+        newY = Math.max(newY, 0);
+
+        const maxX = window.innerWidth - win.offsetWidth;
+        const maxY = window.innerHeight - win.offsetHeight;
+
+        newX = Math.min(newX, maxX);
+        newY = Math.min(newY, maxY);
+
+        win.style.left = newX + "px";
+        win.style.top = newY + "px";
+      }
+
+      document.addEventListener("mousemove", move);
+      document.addEventListener("mouseup", () => {
+        document.removeEventListener("mousemove", move);
+      }, {once:true});
+    };
+
+    win.onclick = () => bringToFront(win);
+
+    document.body.appendChild(win);
+    openWindows.push(win);
+
+    launchApp(content, {eventBus});
+  }
+
+  function handleCommand(raw) {
+  const inputParts = raw.trim().split(" ");
+  const cmd = inputParts[0];
+  const args = inputParts.slice(1);
+
+  switch (cmd) {
+    case "help":
+      print("Commands: help, clear, open [app], apps");
+      break;
+    case "clear":
+      output.innerHTML = "";
+      break;
+    case "apps":
+      print("Available apps:\n" + Object.keys(window.apps).join("\n"));
+      break;
+    case "open":
+      const appName = args[0];
+      if (!appName) {
+        print("Usage: open [appName]");
+      } else if (window.apps[appName]) {
+        createWindow(appName, window.apps[appName]);
+      } else {
+        print(`App not found: ${appName}`);
+      }
+      break;
+    default:
+      print(`Unknown command: ${cmd}`);
+  }
+}
+
+  form.addEventListener("submit", e => {
+    e.preventDefault();
+    const cmd = input.value;
+    print("> " + cmd);
+    handleCommand(cmd);
+    input.value = "";
+  });
+
+  function openOrFocusApp(appName) {
+
+  let win = openWindows.find(w => w.dataset.appName === appName);
+  if (win) {
+    win.style.zIndex = Math.max(...openWindows.map(w => +w.style.zIndex)) + 1;
+    return win;
+  }
+  createWindow(appName, window.apps[appName]);
+  win = openWindows[openWindows.length - 1];
+  win.dataset.appName = appName;
+  return win;
+}
+
+  print("Booting XylerOS...\nType 'help' to begin.");
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <!-- apps --> 
+  <script src="apps/notes.js"></script>
+  <script src="apps/calc.js"></script>
+  <script src="apps/chat.js"></script>
+  <script src="apps/scripter.js"></script>
+  <script src="apps/appbuilder.js"></script>
+  <script src="apps/explorer.js"></script>
+  <script src="apps/imageviewer.js"></script>
+  <script src="apps/browser.js"></script>
+  <script src="apps/theme.js"></script>
+</body>
+</html>
