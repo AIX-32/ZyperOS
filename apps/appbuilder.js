@@ -98,3 +98,4 @@ window.apps["appbuilder"] = function(container, context) {
     setStatus("");
   };
 };
+window.apps.appbuilder.windowSize = { width: "400px", height: "400px" };

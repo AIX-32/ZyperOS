@@ -80,3 +80,4 @@ window.apps["taskmgr"] = (root, { eventBus }) => {
     observer.observe(document.body, { childList: true });
   }
 };
+window.apps.taskmgr.windowSize = { width: "400px", height: "300px" };

@@ -80,3 +80,4 @@ window.apps["chat"] = function(container, context) {
     }
   };
 };
+window.apps.chat.windowSize = { width: "400px", height: "300px" };

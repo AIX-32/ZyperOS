@@ -110,3 +110,4 @@ window.apps["calc"] = function(container, context) {
     input.focus();
   };
 };
+window.apps.calc.windowSize = { width: "400px", height: "300px" };

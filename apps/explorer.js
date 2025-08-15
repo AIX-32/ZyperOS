@@ -424,5 +424,5 @@ window.apps.explorer = function(container, {eventBus}) {
       container.textContent = "Failed to open file system: " + e;
     });
 };
-
+window.apps.explorer.windowSize = { width: "400px", height: "300px" };
 

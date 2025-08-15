@@ -53,3 +53,4 @@ window.apps["notes"] = function(container, context) {
     });
   }, 10000);
 };
+window.apps.notes.windowSize = { width: "400px", height: "300px" };
