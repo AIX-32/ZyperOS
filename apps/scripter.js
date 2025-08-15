@@ -14,7 +14,6 @@ window.apps["scripter"] = function(container, context) {
     border: "1px solid #444",
     padding: "12px",
     fontSize: "15px",
-    resize: "vertical",
     outline: "none",
     borderRadius: "4px",
     fontFamily: container.style.fontFamily,

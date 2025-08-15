@@ -34,3 +34,4 @@ window.apps.theme = function(container, { eventBus }) {
     localStorage.setItem("xyleros-theme-css", css);
   };
 };
+window.apps.theme.windowSize = { width: "400px", height: "150px" };

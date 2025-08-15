@@ -180,3 +180,5 @@ window.apps.viewer = function(container, { eventBus }) {
     btn.onmouseleave = () => btn.style.background = "#222";
   }
 };
+
+window.apps.viewer.windowSize = { width: "600px", height: "500px" };

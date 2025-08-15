@@ -58,7 +58,7 @@
   sidebar.style.zIndex = "20000";
 
   const title = document.createElement("div");
-  title.textContent = "Executed";
+  title.textContent = "Executed:";
   title.style.fontSize = "18px";
   title.style.fontWeight = "bold";
   title.style.color = "#ccc";
@@ -88,12 +88,19 @@
   function createWindow(title, launchApp, options = {}) {
     const win = document.createElement("div");
     win.className = "window";
-    win.style.left = "170px"; 
+    
+    // Use app-defined or default size
+    const width = options.width || "800px";
+    const height = options.height || "600px";
+    
+    win.style.left = "170px";
     win.style.top = "50px";
-    win.style.width = "400px";
-    win.style.height = "auto";
+    win.style.width = width;
+    win.style.height = height;
     win.style.position = "absolute";
     win.style.background = "#222";
+    win.style.display = "flex";
+    win.style.flexDirection = "column";
     win.style.border = "1px solid #444";
     win.style.boxShadow = "2px 2px 10px #000";
     win.style.zIndex = ++highestZ;
@@ -230,13 +237,23 @@
       if (!appName) {
         print("Usage: open [appName]");
       } else if (window.apps[appName]) {
-        createWindow(appName, window.apps[appName]);
+        const appFn = window.apps[appName];
+        const size = appFn.windowSize || {};
+        createWindow(appName, appFn, size);
       } else {
         print(`App not found: ${appName}`);
       }
       break;
     default:
       print(`Unknown command: ${cmd}`);
+      break;
+    case "openall":
+      Object.keys(window.apps).forEach(appName => {
+        const appFn = window.apps[appName];
+        const size = appFn.windowSize || {};
+        createWindow(appName, appFn, size);
+      });
+      break;
   }
 }
 
@@ -255,7 +272,9 @@
     win.style.zIndex = Math.max(...openWindows.map(w => +w.style.zIndex)) + 1;
     return win;
   }
-  createWindow(appName, window.apps[appName]);
+  const appFn = window.apps[appName];
+  const size = appFn.windowSize || {};
+  createWindow(appName, appFn, size);
   win = openWindows[openWindows.length - 1];
   win.dataset.appName = appName;
   return win;
