@@ -56,6 +56,26 @@
   sidebar.style.boxSizing = "border-box";
   sidebar.style.overflowY = "auto";
   sidebar.style.zIndex = "20000";
+
+  const title = document.createElement("div");
+  title.textContent = "Executed";
+  title.style.fontSize = "18px";
+  title.style.fontWeight = "bold";
+  title.style.color = "#ccc";
+  title.style.margin = "10px auto";
+  title.style.textAlign = "center";
+
+  const version = document.createElement("small");
+  version.textContent = "0.02";
+  version.style.display = "block";
+  version.style.margin = "0 auto";
+  version.style.textAlign = "center";
+  version.style.fontSize = "12px";
+  version.style.opacity = "0.5";
+
+  sidebar.appendChild(title);
+  sidebar.appendChild(version);
+
   document.body.appendChild(sidebar);
 
   let highestZ = 1000;
@@ -65,7 +85,7 @@
     win.style.zIndex = highestZ;
   }
 
-  function createWindow(title, launchApp) {
+  function createWindow(title, launchApp, options = {}) {
     const win = document.createElement("div");
     win.className = "window";
     win.style.left = "170px"; 
@@ -182,6 +202,12 @@
     openWindows.push(win);
 
     launchApp(content, {eventBus});
+
+    if (options.hidden) {
+      win.style.display = 'none';
+    }
+
+    return win;
   }
 
   function handleCommand(raw) {
@@ -233,7 +259,39 @@
   win = openWindows[openWindows.length - 1];
   win.dataset.appName = appName;
   return win;
+
+
+  
 }
+
+function tryOpenBackgroundExplorer() {
+  if (typeof createWindow === "function" && window.apps && window.apps.explorer) {
+    // Create the explorer window in hidden state
+    window.backgroundExplorer = createWindow("Explorer", window.apps.explorer, { hidden: true });
+  } else {
+    setTimeout(tryOpenBackgroundExplorer, 50);
+  }
+}
+
+// Call this at startup
+tryOpenBackgroundExplorer();
+
+// Function user can call to show Explorer window
+function showExplorer() {
+  if (window.backgroundExplorer) {
+    window.backgroundExplorer.style.display = "block";
+    // Bring it to front if you want
+    window.backgroundExplorer.style.zIndex = Math.max(...openWindows.map(w => +w.style.zIndex)) + 1;
+  } else {
+    // If not ready, just open normally
+    if (window.apps && window.apps.explorer) {
+      createWindow("Explorer", window.apps.explorer);
+    }
+  }
+}
+
+
+
 
   print("Booting XylerOS...\nType 'help' to begin.");
 </script>
@@ -247,8 +305,10 @@
   <script src="apps/scripter.js"></script>
   <script src="apps/appbuilder.js"></script>
   <script src="apps/explorer.js"></script>
-  <script src="apps/imageviewer.js"></script>
+  <script src="apps/viewer.js"></script>
   <script src="apps/browser.js"></script>
   <script src="apps/theme.js"></script>
+  <script src="apps/taskmgr.js"></script>
+
 </body>
 </html>
