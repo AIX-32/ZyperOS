@@ -9,11 +9,13 @@ window.apps.viewer = function(container, { eventBus }) {
   container.style.padding = "10px";
 
   const title = document.createElement("h2");
-  title.textContent = "Media Player";
+  title.textContent = "Media Viewer";
   title.style.color = "#eee";
   container.appendChild(title);
 
   let mediaElem = null;
+  let currentUrl = null;
+  let isPlaying = false;
 
   const info = document.createElement("div");
   info.style.marginTop = "8px";
@@ -30,23 +32,52 @@ window.apps.viewer = function(container, { eventBus }) {
   const selectBtn = document.createElement("button");
   selectBtn.textContent = "Select Media or Image File";
   styleButton(selectBtn);
-
-  const playPauseBtn = document.createElement("button");
-  playPauseBtn.textContent = "Play";
-  playPauseBtn.disabled = true;
-  styleButton(playPauseBtn);
-
-  const stopBtn = document.createElement("button");
-  stopBtn.textContent = "Stop";
-  stopBtn.disabled = true;
-  styleButton(stopBtn);
-
   controls.appendChild(selectBtn);
-  controls.appendChild(playPauseBtn);
-  controls.appendChild(stopBtn);
 
-  let currentUrl = null;
-  let isPlaying = false;
+  let playPauseBtn = null;
+  let stopBtn = null;
+
+  function clearControls() {
+    if (playPauseBtn) controls.removeChild(playPauseBtn);
+    if (stopBtn) controls.removeChild(stopBtn);
+    playPauseBtn = null;
+    stopBtn = null;
+  }
+
+  function createPlayControls() {
+    clearControls();
+
+    playPauseBtn = document.createElement("button");
+    playPauseBtn.textContent = "Play";
+    styleButton(playPauseBtn);
+
+    stopBtn = document.createElement("button");
+    stopBtn.textContent = "Stop";
+    styleButton(stopBtn);
+
+    controls.appendChild(playPauseBtn);
+    controls.appendChild(stopBtn);
+
+    playPauseBtn.onclick = () => {
+      if (!mediaElem) return;
+      if (isPlaying) {
+        mediaElem.pause();
+        playPauseBtn.textContent = "Play";
+      } else {
+        mediaElem.play();
+        playPauseBtn.textContent = "Pause";
+      }
+      isPlaying = !isPlaying;
+    };
+
+    stopBtn.onclick = () => {
+      if (!mediaElem) return;
+      mediaElem.pause();
+      mediaElem.currentTime = 0;
+      playPauseBtn.textContent = "Play";
+      isPlaying = false;
+    };
+  }
 
   function resetPlayer() {
     if (currentUrl) {
@@ -58,46 +89,32 @@ window.apps.viewer = function(container, { eventBus }) {
       mediaElem = null;
     }
     info.textContent = "";
-    playPauseBtn.disabled = true;
-    stopBtn.disabled = true;
-    playPauseBtn.textContent = "Play";
+    clearControls();
     isPlaying = false;
   }
 
   selectBtn.onclick = () => {
     eventBus.emit("file-select-request", (files) => {
+      resetPlayer();
+
       if (!files || files.length === 0) {
         info.textContent = "⚠️ No file selected.";
-        resetPlayer();
         return;
       }
 
       const file = files[0];
-      if (!file.type.startsWith("file")) {
-        info.textContent = "⚠️ Selected item is not a file.";
-        resetPlayer();
-        return;
-      }
-      if (!file.content) {
-        info.textContent = "⚠️ File content missing.";
-        resetPlayer();
+      if (!file.content || !file.content.type) {
+        info.textContent = "⚠️ File content invalid or missing.";
         return;
       }
 
       const mimeType = file.content.type;
-      if (!mimeType.startsWith("image") && !mimeType.startsWith("audio") && !mimeType.startsWith("video")) {
-        info.textContent = "⚠️ File is not image, audio, or video.";
-        resetPlayer();
+      if (!/^image|audio|video/.test(mimeType)) {
+        info.textContent = "⚠️ Unsupported file type.";
         return;
       }
 
-      if (currentUrl) URL.revokeObjectURL(currentUrl);
       currentUrl = URL.createObjectURL(file.content);
-
-      if (mediaElem) {
-        container.removeChild(mediaElem);
-        mediaElem = null;
-      }
 
       if (mimeType.startsWith("image")) {
         mediaElem = document.createElement("img");
@@ -105,68 +122,32 @@ window.apps.viewer = function(container, { eventBus }) {
         mediaElem.style.maxHeight = "70vh";
         mediaElem.style.border = "1px solid #444";
         mediaElem.style.marginTop = "10px";
-        mediaElem.src = currentUrl;
-        playPauseBtn.disabled = true;
-        stopBtn.disabled = true;
+        clearControls();
       } else if (mimeType.startsWith("audio")) {
         mediaElem = document.createElement("audio");
         mediaElem.src = currentUrl;
         mediaElem.style.marginTop = "10px";
-        playPauseBtn.disabled = false;
-        stopBtn.disabled = false;
-        playPauseBtn.textContent = "Play";
-        isPlaying = false;
-
         mediaElem.onended = () => {
-          playPauseBtn.textContent = "Play";
+          if (playPauseBtn) playPauseBtn.textContent = "Play";
           isPlaying = false;
         };
+        createPlayControls();
       } else if (mimeType.startsWith("video")) {
         mediaElem = document.createElement("video");
         mediaElem.src = currentUrl;
         mediaElem.style.maxWidth = "100%";
         mediaElem.style.maxHeight = "50vh";
         mediaElem.style.marginTop = "10px";
-        mediaElem.controls = false;
-        playPauseBtn.disabled = false;
-        stopBtn.disabled = false;
-        playPauseBtn.textContent = "Play";
-        isPlaying = false;
-
         mediaElem.onended = () => {
-          playPauseBtn.textContent = "Play";
+          if (playPauseBtn) playPauseBtn.textContent = "Play";
           isPlaying = false;
         };
+        createPlayControls();
       }
 
       container.insertBefore(mediaElem, info.nextSibling);
-
       info.textContent = `Loaded: ${file.path} (${mimeType})`;
     });
-  };
-
-  playPauseBtn.onclick = () => {
-    if (!mediaElem) return;
-    if (mediaElem.tagName === "IMG") return; // no play/pause for images
-
-    if (isPlaying) {
-      mediaElem.pause();
-      playPauseBtn.textContent = "Play";
-    } else {
-      mediaElem.play();
-      playPauseBtn.textContent = "Pause";
-    }
-    isPlaying = !isPlaying;
-  };
-
-  stopBtn.onclick = () => {
-    if (!mediaElem) return;
-    if (mediaElem.tagName === "IMG") return;
-
-    mediaElem.pause();
-    mediaElem.currentTime = 0;
-    playPauseBtn.textContent = "Play";
-    isPlaying = false;
   };
 
   function styleButton(btn) {
