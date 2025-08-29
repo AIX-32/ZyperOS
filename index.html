@@ -238,7 +238,7 @@
 
   switch (cmd) {
     case "help":
-      print("Commands: help, clear, open [app], apps");
+      print("Commands: help, clear, open [app], apps, openall, matrix");
       break;
     case "clear":
       output.innerHTML = "";
@@ -268,8 +268,68 @@
         createWindow(appName, appFn, size);
       });
       break;
-  }
+    case "matrix":
+      openOrFocusApp("matrix");
+      break;
+    }
 }
+
+window.apps.matrix = function() {
+    // Create fullscreen overlay
+    const overlay = document.createElement("canvas");
+    overlay.style.position = "fixed";
+    overlay.style.top = "0";
+    overlay.style.left = "0";
+    overlay.style.width = "100%";
+    overlay.style.height = "100%";
+    overlay.style.zIndex = "99999";
+    overlay.style.pointerEvents = "none"; // so it doesn't block clicks
+    document.body.appendChild(overlay);
+
+    const ctx = overlay.getContext("2d");
+
+    function resize() {
+        overlay.width = window.innerWidth;
+        overlay.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789あいうえおかきくけこさしすせそ";
+    const fontSize = 16;
+    const columns = Math.floor(overlay.width / fontSize);
+    const drops = Array(columns).fill(1);
+
+    function draw() {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.05)"; // fade effect
+        ctx.fillRect(0, 0, overlay.width, overlay.height);
+
+        ctx.fillStyle = "#fff"; // white letters
+        ctx.font = fontSize + "px monospace";
+
+        for (let i = 0; i < drops.length; i++) {
+            const text = letters.charAt(Math.floor(Math.random() * letters.length));
+            ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+            if (drops[i] * fontSize > overlay.height && Math.random() > 0.975) {
+                drops[i] = 0;
+            }
+            drops[i]++;
+        }
+    }
+
+    const interval = setInterval(draw, 50);
+
+    // Clean up function
+    return {
+        destroy() {
+            clearInterval(interval);
+            window.removeEventListener("resize", resize);
+            document.body.removeChild(overlay);
+        }
+    };
+};
+
 
   form.addEventListener("submit", e => {
     e.preventDefault();
@@ -323,7 +383,8 @@ function showExplorer() {
   }
 }
 
-
+// Initialize start time
+if (!window.osStartTime) window.osStartTime = Date.now();
 
 
   print("Booting ZyperOS...\nBooting Explorer...\nMake sure to star me on Github!\n\nType 'help' to begin.");
