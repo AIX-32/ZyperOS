@@ -462,7 +462,7 @@ window.apps.matrix = function() {
     e.preventDefault();
     const cmd = input.value;
     if (aiMode) {
-      print("AI: " + cmd);
+      print("You: " + cmd);
       // Process with AI
       await processAICommand(cmd);
     } else {
@@ -470,6 +470,30 @@ window.apps.matrix = function() {
       handleCommand(cmd);
     }
     input.value = "";
+  });
+
+  // Add event listener for up arrow key to recall last command
+  input.addEventListener("keydown", function(e) {
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      // Get the last command from the output
+      const commands = Array.from(output.querySelectorAll("div"));
+      if (commands.length > 0) {
+        // Find the last command that starts with ">" (user command) or "AI:"
+        for (let i = commands.length - 1; i >= 0; i--) {
+          const text = commands[i].textContent;
+          if (text.startsWith("> ")) {
+            // Extract the actual command (remove "> ")
+            input.value = text.substring(2);
+            break;
+          } else if (text.startsWith("AI: ")) {
+            // Extract the actual command (remove "AI: ")
+            input.value = text.substring(4);
+            break;
+          }
+        }
+      }
+    }
   });
 
   // AI command processing function
@@ -482,7 +506,7 @@ window.apps.matrix = function() {
       const conversationResponse = await puter.ai.chat([
         {
           role: "system",
-          content: `You are a helpful AI assistant for ZyperOS, a web-based operating system. 
+          content: `You are a helpful AI assistant for ZyperOS, a web-based operating system, your name is zyper you have emotions that you make up do not use emojis you should act as the OS but have emetions and talk. 
           You can help users with general questions and also help them use ZyperOS commands.
           Available apps: notes, calc, chat, scripter, appbuilder, explorer, viewer, browser, theme, taskmgr, clock, uploader, music, ai
           Available commands: help, clear, open [app], apps, openall, matrix, ai, midbutton (on click js) [button title]
@@ -502,7 +526,7 @@ window.apps.matrix = function() {
       });
       
       // Display first AI's response
-      print("AI Response: " + conversationResponse);
+      print("Zyper: " + conversationResponse);
       
       // Second AI: Command interpretation
       const commandPrompt = `You are an AI that translates natural language requests into ZyperOS system commands.

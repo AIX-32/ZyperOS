@@ -44,6 +44,9 @@ window.apps["chat"] = function(container, context) {
   container.appendChild(input);
 
   let username = "";
+  // Store user's sent messages
+  const messageHistory = [];
+  let historyIndex = -1;
 
   function enableChat(name) {
     username = name.trim();
@@ -75,8 +78,31 @@ window.apps["chat"] = function(container, context) {
 
   input.onkeydown = (e) => {
     if (e.key === "Enter" && input.value.trim() && username) {
+      // Store message in history when sending
+      messageHistory.push(input.value);
+      historyIndex = messageHistory.length;
+      
       context.eventBus.emit("broadcast", { source: username, message: input.value });
       input.value = "";
+    }
+    // Handle up arrow key to copy last message
+    else if (e.key === "ArrowUp" && messageHistory.length > 0) {
+      e.preventDefault(); // Prevent cursor from moving to beginning of input
+      if (historyIndex > 0) {
+        historyIndex--;
+        input.value = messageHistory[historyIndex];
+      }
+    }
+    // Handle down arrow key to navigate through history
+    else if (e.key === "ArrowDown") {
+      e.preventDefault(); // Prevent cursor from moving to end of input
+      if (historyIndex < messageHistory.length - 1) {
+        historyIndex++;
+        input.value = messageHistory[historyIndex];
+      } else {
+        historyIndex = messageHistory.length;
+        input.value = "";
+      }
     }
   };
 };
