@@ -240,7 +240,7 @@
 
   switch (cmd) {
     case "help":
-      print("Commands: help, clear, open [app], apps, openall, matrix, ai");
+      print(getHelpText());
       break;
     case "clear":
       output.innerHTML = "";
@@ -260,6 +260,70 @@
         print(`App not found: ${appName}`);
       }
       break;
+    case "testbutton":
+      print("Example usage: midbutton (alert('Test Button Clicked!')) Test Button");
+      print("Creating a test button now...");
+      handleCommand("midbutton (alert('Test Button Clicked!')) Test Button");
+      break;
+    case "reloadbutton":
+      print("Creating a reload button...");
+      handleCommand("midbutton (location.reload()) Reload Page");
+      break;
+    case "midbutton":
+      // Parse the command: midbutton (javascript code) button title
+      const rawArgs = raw.trim().substring("midbutton".length).trim();
+      // Match everything inside the first parentheses and everything after
+      const jsMatch = rawArgs.match(/^\((.*)\)\s*(.+)$/);
+      
+      if (!jsMatch || jsMatch.length < 3) {
+        print("Usage: midbutton (on click js) [button title]");
+        print("Example: midbutton (alert('Hello World!')) My Button");
+      } else {
+        const onClickJs = jsMatch[1];
+        const buttonTitle = jsMatch[2];
+        
+        // Create the button
+        const button = document.createElement("button");
+        button.textContent = buttonTitle;
+        button.style.position = "fixed";
+        button.style.bottom = "20px";
+        button.style.left = "50%";
+        button.style.transform = "translateX(-50%)";
+        button.style.zIndex = "10000";
+        button.style.padding = "10px 20px";
+        button.style.background = "#222";
+        button.style.color = "#eee";
+        button.style.border = "1px solid #555";
+        button.style.borderRadius = "4px";
+        button.style.cursor = "pointer";
+        button.style.fontFamily = "'Fira Mono', 'Courier New', Courier, monospace";
+        button.style.fontSize = "14px";
+        button.style.boxShadow = "0 2px 5px rgba(0,0,0,0.3)";
+        // Add type to prevent form submission
+        button.type = "button";
+        
+        // Add hover effects
+        button.addEventListener("mouseenter", () => {
+          button.style.background = "#333";
+        });
+        button.addEventListener("mouseleave", () => {
+          button.style.background = "#222";
+        });
+        
+        // Add click event with the provided JavaScript
+        button.onclick = () => {
+          try {
+            eval(onClickJs);
+          } catch (err) {
+            print("Error executing button script: " + err.message);
+          }
+        };
+        
+        // Add the button to the document body
+        document.body.appendChild(button);
+        print(`Button "${buttonTitle}" created at bottom center`);
+      }
+      break;
     default:
       print(`Unknown command: ${cmd}`);
       break;
@@ -276,7 +340,23 @@
     case "ai":
       openOrFocusApp("ai");
       break;
-    }
+  }
+}
+
+// Add the midbutton command to the help text
+function getHelpText() {
+  return `Commands: 
+  help - Show this help message
+  clear - Clear the terminal output
+  open [app] - Open an app (e.g., open calc)
+  apps - List all available apps
+  openall - Open all apps
+  matrix - Show the matrix effect
+  ai - Open the AI app
+  midbutton (on click js) [button title] - Create a button at bottom center
+    Example: midbutton (alert('Hello!')) Click Me
+  testbutton - Create a test button to demonstrate functionality
+  reloadbutton - Create a button that reloads the page`;
 }
 
 window.apps.matrix = function() {
@@ -405,8 +485,13 @@ window.apps.matrix = function() {
           content: `You are a helpful AI assistant for ZyperOS, a web-based operating system. 
           You can help users with general questions and also help them use ZyperOS commands.
           Available apps: notes, calc, chat, scripter, appbuilder, explorer, viewer, browser, theme, taskmgr, clock, uploader, music, ai
-          Available commands: help, clear, open [app], apps, openall, matrix, ai
-          When users ask to open apps or perform system actions, be helpful but also mention that you'll translate their request into a system command.`
+          Available commands: help, clear, open [app], apps, openall, matrix, ai, midbutton (on click js) [button title]
+          When users ask to open apps or perform system actions, be helpful but also mention that you'll translate their request into a system command.
+          
+          The midbutton command creates a button at the bottom center of the screen.
+          Syntax: midbutton (JavaScript code) button title
+          Example: midbutton (alert('Hello World!')) Click Me
+          This creates a button labeled "Click Me" that shows an alert when clicked.`
         },
         {
           role: "user",
@@ -421,9 +506,9 @@ window.apps.matrix = function() {
       
       // Second AI: Command interpretation
       const commandPrompt = `You are an AI that translates natural language requests into ZyperOS system commands.
-      The available commands are: help, clear, open [app], apps, openall, matrix, ai
+      The available commands are: help, clear, open [app], apps, openall, matrix, ai, midbutton (on click js) [button title]
       The available apps are: notes, calc, chat, scripter, appbuilder, explorer, viewer, browser, theme, taskmgr, clock, uploader, music, ai
-      Respond ONLY with the exact command to execute, or "none" if no command is needed.
+      Respond ONLY with the exact command to execute, or "none" if no command is needed. DO NOT use code blocks or any other formatting.
       Examples:
       User: "open the calculator"
       Response: "open calc"
@@ -433,6 +518,15 @@ window.apps.matrix = function() {
       
       User: "what time is it"
       Response: "open clock"
+      
+      User: "create a button that shows an alert"
+      Response: "midbutton (alert('Button clicked!')) Alert Button"
+      
+      User: "make a button at the bottom that opens the calculator"
+      Response: "midbutton (handleCommand('open calc')) Open Calculator"
+      
+      User: "make a button where it reloads the page"
+      Response: "midbutton (location.reload()) Reload Page"
       
       User: "hello there"
       Response: "none"
@@ -459,6 +553,9 @@ window.apps.matrix = function() {
         // Handle other object types that can be converted to string
         command = commandResponse.toString().trim();
       }
+      
+      // Remove markdown code blocks if present
+      command = command.replace(/```.*\n?/g, '').trim();
       
       if (command !== "none" && command !== "") {
         // Execute the command
