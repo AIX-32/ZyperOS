@@ -23,9 +23,10 @@
 <body>
   <div id="shell">
     <div id="output"></div>
-    <form id="commandForm">
-      <span>&gt;</span>
-      <input type="text" id="commandInput" autocomplete="off" autofocus placeholder="Type a command...">
+    <form id="commandForm" style="display: flex; align-items: center;">
+      <span id="commandPrompt" style="margin-right: 5px;">&gt;</span>
+      <input type="text" id="commandInput" autocomplete="off" autofocus placeholder="Type a command..." style="flex: 1;">
+      <button id="toggleMode" style="background: #222; color: #eee; border: 1px solid #444; padding: 6px 10px; cursor: pointer; transition: background 0.3s; margin-left: 5px; font-size: 12px;">AI</button>
     </form>
   </div>
 
@@ -335,13 +336,137 @@ window.apps.matrix = function() {
 };
 
 
-  form.addEventListener("submit", e => {
+  // AI Mode state
+  let aiMode = false;
+
+  // Toggle button functionality
+  const toggleButton = document.getElementById("toggleMode");
+  const commandPrompt = document.getElementById("commandPrompt");
+  
+  // Add hover effects
+  toggleButton.addEventListener("mouseenter", () => {
+    if (!aiMode) {
+      toggleButton.style.background = "#333";
+    }
+  });
+  
+  toggleButton.addEventListener("mouseleave", () => {
+    if (!aiMode) {
+      toggleButton.style.background = "#222";
+    } else {
+      toggleButton.style.background = "linear-gradient(90deg, #4CAF50, #45a049)";
+    }
+  });
+  
+  toggleButton.addEventListener("click", (e) => {
+    // Prevent form submission when clicking the toggle button
+    e.preventDefault();
+    aiMode = !aiMode;
+    if (aiMode) {
+      toggleButton.textContent = "AI";
+      toggleButton.style.background = "linear-gradient(90deg, #4CAF50, #45a049)";
+      commandPrompt.textContent = "AI:";
+      input.placeholder = "Ask AI something...";
+    } else {
+      toggleButton.textContent = "AI";
+      toggleButton.style.background = "#222";
+      commandPrompt.textContent = ">";
+      input.placeholder = "Type a command...";
+    }
+  });
+
+  form.addEventListener("submit", async e => {
     e.preventDefault();
     const cmd = input.value;
-    print("> " + cmd);
-    handleCommand(cmd);
+    if (aiMode) {
+      print("AI: " + cmd);
+      // Process with AI
+      await processAICommand(cmd);
+    } else {
+      print("> " + cmd);
+      handleCommand(cmd);
+    }
     input.value = "";
   });
+
+  // AI command processing function
+  async function processAICommand(question) {
+    try {
+      // Show loading message
+      print("AI is thinking...");
+      
+      // First AI: General conversation with system context
+      const conversationResponse = await puter.ai.chat([
+        {
+          role: "system",
+          content: `You are a helpful AI assistant for ZyperOS, a web-based operating system. 
+          You can help users with general questions and also help them use ZyperOS commands.
+          Available apps: notes, calc, chat, scripter, appbuilder, explorer, viewer, browser, theme, taskmgr, clock, uploader, music, ai
+          Available commands: help, clear, open [app], apps, openall, matrix, ai
+          When users ask to open apps or perform system actions, be helpful but also mention that you'll translate their request into a system command.`
+        },
+        {
+          role: "user",
+          content: question
+        }
+      ], {
+        model: "gpt-4o-mini",
+      });
+      
+      // Display first AI's response
+      print("AI Response: " + conversationResponse);
+      
+      // Second AI: Command interpretation
+      const commandPrompt = `You are an AI that translates natural language requests into ZyperOS system commands.
+      The available commands are: help, clear, open [app], apps, openall, matrix, ai
+      The available apps are: notes, calc, chat, scripter, appbuilder, explorer, viewer, browser, theme, taskmgr, clock, uploader, music, ai
+      Respond ONLY with the exact command to execute, or "none" if no command is needed.
+      Examples:
+      User: "open the calculator"
+      Response: "open calc"
+      
+      User: "show me all apps"
+      Response: "apps"
+      
+      User: "what time is it"
+      Response: "open clock"
+      
+      User: "hello there"
+      Response: "none"
+      
+      Request: ${question}`;
+      
+      const commandResponse = await puter.ai.chat([
+        {
+          role: "system",
+          content: commandPrompt
+        }
+      ], {
+        model: "gpt-4o-mini",
+      });
+      
+      // Check if commandResponse is a string
+      let command = "none";
+      if (typeof commandResponse === 'string') {
+        command = commandResponse.trim();
+      } else if (commandResponse && typeof commandResponse === 'object' && commandResponse.text) {
+        // Handle case where response is an object with a text property
+        command = commandResponse.text.trim();
+      } else if (commandResponse && typeof commandResponse.toString === 'function') {
+        // Handle other object types that can be converted to string
+        command = commandResponse.toString().trim();
+      }
+      
+      if (command !== "none" && command !== "") {
+        // Execute the command
+        print("Executing command: " + command);
+        handleCommand(command);
+        print("Command executed successfully");
+      }
+    } catch (error) {
+      print("AI Error: " + error.message);
+    }
+  }
 
   function openOrFocusApp(appName) {
 
