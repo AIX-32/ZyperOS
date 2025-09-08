@@ -26,7 +26,7 @@
     <form id="commandForm" style="display: flex; align-items: center;">
       <span id="commandPrompt" style="margin-right: 5px;">&gt;</span>
       <input type="text" id="commandInput" autocomplete="off" autofocus placeholder="Type a command..." style="flex: 1;">
-      <button id="toggleMode" style="background: #222; color: #eee; border: 1px solid #444; padding: 6px 10px; cursor: pointer; transition: background 0.3s; margin-left: 5px; font-size: 12px;">AI</button>
+      <button id="toggleMode" type="button" style="background: #222; color: #eee; border: 1px solid #444; padding: 6px 10px; cursor: pointer; transition: background 0.3s; margin-left: 5px; font-size: 12px;">AI</button>
     </form>
   </div>
 
@@ -339,40 +339,43 @@ window.apps.matrix = function() {
   // AI Mode state
   let aiMode = false;
 
-  // Toggle button functionality
-  const toggleButton = document.getElementById("toggleMode");
-  const commandPrompt = document.getElementById("commandPrompt");
-  
-  // Add hover effects
-  toggleButton.addEventListener("mouseenter", () => {
-    if (!aiMode) {
-      toggleButton.style.background = "#333";
-    }
-  });
-  
-  toggleButton.addEventListener("mouseleave", () => {
-    if (!aiMode) {
-      toggleButton.style.background = "#222";
-    } else {
-      toggleButton.style.background = "linear-gradient(90deg, #4CAF50, #45a049)";
-    }
-  });
-  
-  toggleButton.addEventListener("click", (e) => {
-    // Prevent form submission when clicking the toggle button
-    e.preventDefault();
-    aiMode = !aiMode;
-    if (aiMode) {
-      toggleButton.textContent = "AI";
-      toggleButton.style.background = "linear-gradient(90deg, #4CAF50, #45a049)";
-      commandPrompt.textContent = "AI:";
-      input.placeholder = "Ask AI something...";
-    } else {
-      toggleButton.textContent = "AI";
-      toggleButton.style.background = "#222";
-      commandPrompt.textContent = ">";
-      input.placeholder = "Type a command...";
-    }
+  // Wait for DOM to be fully loaded before accessing elements
+  document.addEventListener("DOMContentLoaded", function() {
+    // Toggle button functionality
+    const toggleButton = document.getElementById("toggleMode");
+    const commandPrompt = document.getElementById("commandPrompt");
+    
+    // Add hover effects
+    toggleButton.addEventListener("mouseenter", () => {
+      if (!aiMode) {
+        toggleButton.style.background = "#333";
+      }
+    });
+    
+    toggleButton.addEventListener("mouseleave", () => {
+      if (!aiMode) {
+        toggleButton.style.background = "#222";
+      } else {
+        toggleButton.style.background = "linear-gradient(90deg, #4CAF50, #45a049)";
+      }
+    });
+    
+    toggleButton.addEventListener("click", (e) => {
+      // Prevent form submission when clicking the toggle button
+      e.preventDefault();
+      aiMode = !aiMode;
+      if (aiMode) {
+        toggleButton.textContent = "AI";
+        toggleButton.style.background = "linear-gradient(90deg, #4CAF50, #45a049)";
+        commandPrompt.textContent = "AI:";
+        input.placeholder = "Ask AI something...";
+      } else {
+        toggleButton.textContent = "AI";
+        toggleButton.style.background = "#222";
+        commandPrompt.textContent = ">";
+        input.placeholder = "Type a command...";
+      }
+    });
   });
 
   form.addEventListener("submit", async e => {
