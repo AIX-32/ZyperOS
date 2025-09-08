@@ -14,6 +14,7 @@
 
   
 <meta property="og:title" content="ZyperOS">
+  <script src="https://js.puter.com/v2/"></script>
 <meta property="og:description" content="ZyperOS a well made online OS.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://aix-32.github.io/ZyperOS/">
@@ -238,7 +239,7 @@
 
   switch (cmd) {
     case "help":
-      print("Commands: help, clear, open [app], apps, openall, matrix");
+      print("Commands: help, clear, open [app], apps, openall, matrix, ai");
       break;
     case "clear":
       output.innerHTML = "";
@@ -270,6 +271,9 @@
       break;
     case "matrix":
       openOrFocusApp("matrix");
+      break;
+    case "ai":
+      openOrFocusApp("ai");
       break;
     }
 }
@@ -404,5 +408,6 @@ if (!window.osStartTime) window.osStartTime = Date.now();
   <script src="apps/clock.js"></script>
   <script src="apps/uploader.js"></script>
   <script src="apps/music.js"></script>
+  <script src="apps/ai.js"></script>
 </body>
 </html>
