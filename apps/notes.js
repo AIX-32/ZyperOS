@@ -2,31 +2,24 @@ window.apps = window.apps || {};
 
 window.apps["notes"] = function(container, context) {
   container.innerHTML = "";
+  container.className = "app-container";
 
   const wrapper = document.createElement("div");
-  wrapper.style.display = "flex";
-  wrapper.style.flexDirection = "column";
-  wrapper.style.height = "100%";
+  wrapper.className = "app-wrapper";
 
   const textarea = document.createElement("textarea");
-  textarea.style.flex = "1";
-  textarea.style.width = "98%";
-  textarea.style.resize = "none";
-  textarea.style.background = "#111";
-  textarea.style.color = "#eee";
-  textarea.style.border = "1px solid #444";
-  textarea.style.padding = "10px";
-  textarea.style.margin = "4px auto";
+  textarea.className = "app-textarea";
   textarea.placeholder = "Type your notes here...";
+
   wrapper.appendChild(textarea);
 
   const buttonBar = document.createElement("div");
-  buttonBar.style.textAlign = "right";
-  buttonBar.style.paddingTop = "8px";
+  buttonBar.className = "app-button-bar";
 
   const saveBtn = document.createElement("button");
   saveBtn.textContent = "Save";
-  saveBtn.style.padding = "5px 10px";
+  saveBtn.className = "app-button";
+
   buttonBar.appendChild(saveBtn);
   wrapper.appendChild(buttonBar);
 

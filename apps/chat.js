@@ -1,23 +1,17 @@
 window.apps["chat"] = function(container, context) {
-  container.style.display = "flex";
-  container.style.flexDirection = "column";
-  container.style.height = "100%";
+  container.className = "app-container";
 
   const userDiv = document.createElement("div");
-  userDiv.style.marginBottom = "8px";
-  userDiv.style.display = "flex";
-  userDiv.style.gap = "8px";
+  userDiv.className = "app-flex-row";
 
   const usernameInput = document.createElement("input");
   usernameInput.type = "text";
   usernameInput.placeholder = "Enter your username";
-  usernameInput.style.flex = "1";
-  usernameInput.style.padding = "6px";
+  usernameInput.className = "app-input";
 
   const usernameBtn = document.createElement("button");
   usernameBtn.textContent = "Set Username";
-  usernameBtn.style.padding = "6px 12px";
-  usernameBtn.style.cursor = "pointer";
+  usernameBtn.className = "app-button";
 
   userDiv.appendChild(usernameInput);
   userDiv.appendChild(usernameBtn);
@@ -25,21 +19,14 @@ window.apps["chat"] = function(container, context) {
   container.appendChild(userDiv);
 
   const chatDiv = document.createElement("div");
-  chatDiv.style.flex = "1";
-  chatDiv.style.overflowY = "auto";
-  chatDiv.style.background = "#111";
-  chatDiv.style.padding = "10px";
-  chatDiv.style.color = "#eee";
-  chatDiv.style.fontFamily = "monospace";
+  chatDiv.className = "app-chat-container";
 
   container.appendChild(chatDiv);
 
   const input = document.createElement("input");
   input.type = "text";
   input.placeholder = "Send message to all apps";
-  input.style.width = "100%";
-  input.style.marginTop = "8px";
-  input.style.padding = "6px";
+  input.className = "app-input";
   input.disabled = true;
   container.appendChild(input);
 

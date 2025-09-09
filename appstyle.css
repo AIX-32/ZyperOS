@@ -1,0 +1,112 @@
+/* Common styles for all apps */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  color: #ccc;
+  font-family: monospace;
+}
+
+.app-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.app-textarea {
+  flex: 1;
+  width: 98%;
+  resize: none;
+  background: #111;
+  color: #eee;
+  border: 1px solid #444;
+  padding: 10px;
+  margin: 4px auto;
+  font-family: monospace;
+}
+
+.app-input {
+  width: 100%;
+  padding: 6px;
+  background: #111;
+  color: #eee;
+  border: 1px solid #444;
+  font-family: monospace;
+}
+
+.app-input:focus {
+  outline: none;
+  border-color: #666;
+}
+
+.app-button {
+  padding: 6px 12px;
+  background: #222;
+  color: #eee;
+  border: 1px solid #444;
+  cursor: pointer;
+  font-family: monospace;
+  border-radius: 4px;
+  transition: background 0.3s ease;
+}
+
+.app-button:hover {
+  background: #333;
+}
+
+.app-output {
+  min-height: 100px;
+  background: #111;
+  color: #fff;
+  padding: 10px;
+  font-family: monospace;
+  white-space: pre-wrap;
+  overflow-y: auto;
+}
+
+.app-history {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #ccc;
+  font-family: monospace;
+  max-height: 150px;
+  overflow-y: auto;
+  border-top: 1px solid #444;
+  padding-top: 5px;
+}
+
+.app-chat-container {
+  flex: 1;
+  overflow-y: auto;
+  background: #111;
+  padding: 10px;
+  color: #eee;
+  font-family: monospace;
+}
+
+.app-button-bar {
+  text-align: right;
+  padding-top: 8px;
+}
+
+.app-flex-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.app-flex-row > .app-input {
+  flex: 1;
+}
+
+.app-full-width {
+  width: 100%;
+}
+
+.app-margin-bottom {
+  margin-bottom: 10px;
+}
+
+.app-font-large {
+  font-size: 16px;
+}

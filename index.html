@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>ZyperOS</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="appstyle.css">
   <link rel="icon" href="./img/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="32x32" href="./img/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="./img/favicon-16x16.png">
@@ -21,6 +22,9 @@
 <meta property="og:image" content="./img/favicon-32x32.png">
 </head>
 <body>
+  <!-- Animated gradient background for AI mode -->
+  <div class="gradient-bg" id="gradientBg"></div>
+  
   <div id="shell">
     <div id="output"></div>
     <form id="commandForm" style="display: flex; align-items: center;">
@@ -59,35 +63,14 @@
 
   const sidebar = document.createElement("div");
   sidebar.id = "sidebar";
-  sidebar.style.position = "fixed";
-  sidebar.style.top = "0";
-  sidebar.style.left = "0";
-  sidebar.style.bottom = "0";
-  sidebar.style.width = "150px";
-  sidebar.style.background = "#111";
-  sidebar.style.borderRight = "1px solid #333";
-  sidebar.style.display = "flex";
-  sidebar.style.flexDirection = "column";
-  sidebar.style.padding = "10px 5px";
-  sidebar.style.boxSizing = "border-box";
-  sidebar.style.overflowY = "auto";
-  sidebar.style.zIndex = "20000";
 
   const title = document.createElement("div");
+  title.id = "sidebar-title";
   title.textContent = "Executed:";
-  title.style.fontSize = "18px";
-  title.style.fontWeight = "bold";
-  title.style.color = "#ccc";
-  title.style.margin = "10px auto";
-  title.style.textAlign = "center";
 
   const version = document.createElement("small");
+  version.id = "sidebar-version";
   version.textContent = "0.8";
-  version.style.display = "block";
-  version.style.margin = "0 auto";
-  version.style.textAlign = "center";
-  version.style.fontSize = "12px";
-  version.style.opacity = "0.5";
 
   sidebar.appendChild(title);
   sidebar.appendChild(version);
@@ -97,6 +80,13 @@
   let highestZ = 1000;
 
   function bringToFront(win) {
+    // Don't bring to front if window is set to stay on top
+    const stayOnTopWindows = document.querySelectorAll('.window[style*="z-index: 99999"]');
+    if (stayOnTopWindows.length > 0 && win.style.zIndex !== "99999") {
+      // There's a stay on top window, don't bring this one to front
+      return;
+    }
+    
     highestZ++;
     win.style.zIndex = highestZ;
   }
@@ -114,27 +104,14 @@
     win.style.width = width;
     win.style.height = height;
     win.style.position = "absolute";
-    win.style.background = "#222";
-    win.style.display = "flex";
-    win.style.flexDirection = "column";
-    win.style.border = "1px solid #444";
-    win.style.boxShadow = "2px 2px 10px #000";
     win.style.zIndex = ++highestZ;
+
+    // Track if window should stay on top
+    let stayOnTop = false;
 
     const taskbarBtn = document.createElement("button");
     taskbarBtn.textContent = title;
     taskbarBtn.title = "Minimize/Restore";
-    taskbarBtn.style.margin = "4px 0";
-    taskbarBtn.style.padding = "6px 8px";
-    taskbarBtn.style.background = "#1e1e1e";
-    taskbarBtn.style.color = "#eee";
-    taskbarBtn.style.border = "1px solid #333";
-    taskbarBtn.style.cursor = "pointer";
-    taskbarBtn.style.textAlign = "left";
-    taskbarBtn.style.fontWeight = "bold";
-    taskbarBtn.style.whiteSpace = "nowrap";
-    taskbarBtn.style.overflow = "hidden";
-    taskbarBtn.style.textOverflow = "ellipsis";
 
     sidebar.appendChild(taskbarBtn);
 
@@ -143,7 +120,9 @@
     taskbarBtn.onclick = () => {
       if (minimized) {
         win.style.display = "block";
-        bringToFront(win);
+        if (!stayOnTop) {
+          bringToFront(win);
+        }
         minimized = false;
       } else {
         win.style.display = "none";
@@ -153,24 +132,53 @@
 
     const titlebar = document.createElement("div");
     titlebar.className = "titlebar";
-    titlebar.style.background = "#333";
-    titlebar.style.padding = "5px";
-    titlebar.style.cursor = "move";
-    titlebar.style.display = "flex";
-    titlebar.style.justifyContent = "space-between";
-    titlebar.style.alignItems = "center";
 
     const titleSpan = document.createElement("span");
     titleSpan.textContent = title;
-    titleSpan.style.fontWeight = "bold";
 
+    // Create button container for titlebar buttons
+    const buttonContainer = document.createElement("div");
+    buttonContainer.style.display = "flex";
+    buttonContainer.style.gap = "5px";
+    buttonContainer.style.position = "absolute";
+    buttonContainer.style.right = "10px";
+    buttonContainer.style.top = "50%";
+    buttonContainer.style.transform = "translateY(-50%)";
+
+    // Minimize button
+    const minimizeBtn = document.createElement("button");
+    minimizeBtn.textContent = "−";
+    minimizeBtn.title = "Minimize";
+    minimizeBtn.className = "titlebar-button";
+    minimizeBtn.onclick = () => {
+      win.style.display = "none";
+      minimized = true;
+    };
+
+    // Stay on top button
+    const topBtn = document.createElement("button");
+    topBtn.textContent = "↾";
+    topBtn.title = "Stay on top";
+    topBtn.className = "titlebar-button";
+    topBtn.onclick = () => {
+      // Toggle stay on top
+      stayOnTop = !stayOnTop;
+      if (stayOnTop) {
+        win.style.zIndex = "99999";
+        topBtn.textContent = "⇂";
+        topBtn.title = "Release top";
+      } else {
+        win.style.zIndex = highestZ;
+        topBtn.textContent = "↾";
+        topBtn.title = "Stay on top";
+      }
+    };
+
+    // Close button
     const closeBtn = document.createElement("button");
-    closeBtn.textContent = "X";
-    closeBtn.style.background = "#900";
-    closeBtn.style.color = "#fff";
-    closeBtn.style.border = "none";
-    closeBtn.style.padding = "2px 5px";
-    closeBtn.style.cursor = "pointer";
+    closeBtn.textContent = "×";
+    closeBtn.title = "Close";
+    closeBtn.className = "titlebar-button";
     closeBtn.onclick = () => {
       document.body.removeChild(win);
       sidebar.removeChild(taskbarBtn);
@@ -178,21 +186,24 @@
       if (index !== -1) openWindows.splice(index, 1);
     };
 
+    // Add buttons to container
+    buttonContainer.appendChild(minimizeBtn);
+    buttonContainer.appendChild(topBtn);
+    buttonContainer.appendChild(closeBtn);
+
     titlebar.appendChild(titleSpan);
-    titlebar.appendChild(closeBtn);
+    titlebar.appendChild(buttonContainer);
     win.appendChild(titlebar);
 
     const content = document.createElement("div");
     content.className = "app-content";
-    content.style.padding = "10px";
-    content.style.color = "#ccc";
-    content.style.height = "calc(100% - 30px)";
-    content.style.overflow = "auto";
     win.appendChild(content);
 
     let offsetX = 0, offsetY = 0;
     titlebar.onmousedown = function(e) {
-      bringToFront(win);
+      if (!stayOnTop) {
+        bringToFront(win);
+      }
       offsetX = e.clientX - win.offsetLeft;
       offsetY = e.clientY - win.offsetTop;
 
@@ -219,7 +230,11 @@
       }, {once:true});
     };
 
-    win.onclick = () => bringToFront(win);
+    win.onclick = () => {
+      if (!stayOnTop) {
+        bringToFront(win);
+      }
+    };
 
     document.body.appendChild(win);
     openWindows.push(win);
@@ -285,30 +300,9 @@
         // Create the button
         const button = document.createElement("button");
         button.textContent = buttonTitle;
-        button.style.position = "fixed";
-        button.style.bottom = "20px";
-        button.style.left = "50%";
-        button.style.transform = "translateX(-50%)";
-        button.style.zIndex = "10000";
-        button.style.padding = "10px 20px";
-        button.style.background = "#222";
-        button.style.color = "#eee";
-        button.style.border = "1px solid #555";
-        button.style.borderRadius = "4px";
-        button.style.cursor = "pointer";
-        button.style.fontFamily = "'Fira Mono', 'Courier New', Courier, monospace";
-        button.style.fontSize = "14px";
-        button.style.boxShadow = "0 2px 5px rgba(0,0,0,0.3)";
+        button.className = "midbutton"; // Use CSS class instead of inline styles
         // Add type to prevent form submission
         button.type = "button";
-        
-        // Add hover effects
-        button.addEventListener("mouseenter", () => {
-          button.style.background = "#333";
-        });
-        button.addEventListener("mouseleave", () => {
-          button.style.background = "#222";
-        });
         
         // Add click event with the provided JavaScript
         button.onclick = () => {
@@ -329,6 +323,9 @@
       break;
     case "openall":
       Object.keys(window.apps).forEach(appName => {
+        // Skip the matrix app
+        if (appName === "matrix") return;
+        
         const appFn = window.apps[appName];
         const size = appFn.windowSize || {};
         createWindow(appName, appFn, size);
@@ -424,6 +421,7 @@ window.apps.matrix = function() {
     // Toggle button functionality
     const toggleButton = document.getElementById("toggleMode");
     const commandPrompt = document.getElementById("commandPrompt");
+    const gradientBg = document.getElementById("gradientBg");
     
     // Add hover effects
     toggleButton.addEventListener("mouseenter", () => {
@@ -436,7 +434,7 @@ window.apps.matrix = function() {
       if (!aiMode) {
         toggleButton.style.background = "#222";
       } else {
-        toggleButton.style.background = "linear-gradient(90deg, #4CAF50, #45a049)";
+        toggleButton.style.background = "#555"; // Changed from green to dark gray
       }
     });
     
@@ -446,14 +444,18 @@ window.apps.matrix = function() {
       aiMode = !aiMode;
       if (aiMode) {
         toggleButton.textContent = "AI";
-        toggleButton.style.background = "linear-gradient(90deg, #4CAF50, #45a049)";
+        toggleButton.style.background = "#555"; // Changed from green to dark gray
         commandPrompt.textContent = "AI:";
         input.placeholder = "Ask AI something...";
+        // Show gradient background
+        gradientBg.classList.add("active");
       } else {
         toggleButton.textContent = "AI";
         toggleButton.style.background = "#222";
         commandPrompt.textContent = ">";
         input.placeholder = "Type a command...";
+        // Hide gradient background
+        gradientBg.classList.remove("active");
       }
     });
   });

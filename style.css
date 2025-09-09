@@ -7,6 +7,7 @@ body {
   justify-content: center;
   align-items: center;
   height: 100vh;
+  overflow: hidden;
 }
 
 #shell {
@@ -18,6 +19,8 @@ body {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  border-radius: 25px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
 #output {
@@ -25,11 +28,18 @@ body {
   overflow-y: auto;
   margin-bottom: 1em;
   white-space: pre-wrap;
+  border-radius: 15px;
+  padding: 15px;
+  background: #252525;
 }
 
 form {
   display: flex;
   gap: 0.5em;
+  background: #2a2a2a;
+  padding: 15px;
+  border-radius: 20px;
+  border: 1px solid #3a3a3a;
 }
 
 input {
@@ -39,21 +49,27 @@ input {
   border: none;
   outline: none;
   font-family: monospace;
+  padding: 12px 15px;
+  border-radius: 15px;
 }
 
 button {
   background-color: #333;
   color: #eee;
   border: 1px solid #666;
-  padding: 10px;
-  border-radius: 4px;
+  padding: 12px 20px; /* Match height with input */
+  border-radius: 15px;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  font-weight: bold;
+  height: fit-content; /* Ensure proper height */
+  align-self: center; /* Center vertically */
 }
 
 button:hover {
   background-color: #555;
 }
+
 input[type="range"] {
   -webkit-appearance: none;
   width: 100%;
@@ -108,4 +124,199 @@ input[type="range"]::-moz-range-thumb:hover {
 
 input[type="range"]:focus {
   outline: none;
+}
+
+/* Animated gradient for AI mode */
+.gradient-bg {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 200px;
+  background: linear-gradient(45deg, 
+      rgba(139, 69, 19, 0.3), 
+      rgba(255, 0, 221, 0.4), 
+      rgba(255, 69, 0, 0.3), 
+      rgba(138, 43, 226, 0.4),
+      rgba(75, 0, 130, 0.3),
+      rgba(0, 191, 255, 0.4)
+  );
+  background-size: 400% 400%;
+  animation: gradientMove 8s ease-in-out infinite;
+  filter: blur(60px);
+  opacity: 0;
+  z-index: 1;
+  transition: opacity 0.5s ease;
+}
+
+.gradient-bg.active {
+  opacity: 0.8;
+}
+
+@keyframes gradientMove {
+  0%, 100% { 
+      background-position: 0% 50%; 
+      transform: scale(1);
+  }
+  25% { 
+      background-position: 100% 50%; 
+      transform: scale(1.1);
+  }
+  50% { 
+      background-position: 100% 100%; 
+      transform: scale(1.05);
+  }
+  75% { 
+      background-position: 0% 100%; 
+      transform: scale(1.08);
+  }
+}
+
+.window {
+  border-radius: 25px !important;
+  overflow: hidden;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(10px);
+  background: rgba(30, 30, 30, 0.9) !important;
+  transition: all 0.3s ease;
+}
+
+.window:hover {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6) !important;
+  transform: translateY(-2px);
+}
+
+.titlebar {
+  border-radius: 25px 25px 0 0 !important;
+  background: linear-gradient(to right, #2a2a2a, #1f1f1f) !important;
+  padding: 10px 15px !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  cursor: move !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+  position: relative !important;
+}
+
+.titlebar span {
+  font-weight: bold !important;
+  color: #eee !important;
+  font-size: 16px !important;
+  letter-spacing: 0.5px !important;
+  text-align: center !important;
+}
+
+.titlebar-button {
+  background: rgba(60, 60, 60, 0.7) !important;
+  color: white !important;
+  border: none !important;
+  width: 24px !important;
+  height: 24px !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+  font-weight: bold !important;
+  transition: all 0.2s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  font-size: 14px !important;
+}
+
+.titlebar-button:hover {
+  background: rgba(100, 100, 100, 0.9) !important;
+  transform: scale(1.1) !important;
+}
+
+.app-content {
+  border-radius: 0 0 25px 25px !important;
+  padding: 15px !important;
+  color: #ccc !important;
+  height: calc(100% - 45px) !important;
+  overflow: auto !important;
+  background: rgba(25, 25, 25, 0.7) !important;
+}
+
+/* Sidebar styling */
+#sidebar {
+  position: fixed !important;
+  top: 20px !important;
+  left: 20px !important;
+  bottom: 20px !important;
+  width: 150px !important;
+  background: #1d1d1d !important;
+  border: 1px solid #3a3a3a !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 10px 5px !important;
+  box-sizing: border-box !important;
+  overflow-y: auto !important;
+  z-index: 20000 !important;
+  border-radius: 20px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+}
+
+#sidebar-title {
+  font-size: 18px !important;
+  font-weight: bold !important;
+  color: #ccc !important;
+  margin: 10px auto !important;
+  text-align: center !important;
+}
+
+#sidebar-version {
+  display: block !important;
+  margin: 0 auto !important;
+  text-align: center !important;
+  font-size: 12px !important;
+  opacity: 0.5 !important;
+}
+
+#sidebar button {
+  margin: 5px 0 !important;
+  padding: 8px 10px !important;
+  background: #333 !important;
+  color: #eee !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  font-weight: 500 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  transition: all 0.2s ease !important;
+  font-size: 14px !important;
+  width: calc(100% - 10px) !important;
+  margin-left: 5px !important;
+  margin-right: 5px !important;
+}
+
+#sidebar button:hover {
+  background: #444 !important;
+  transform: translateX(3px) !important;
+  border-color: rgba(100, 100, 100, 0.3) !important;
+}
+
+/* Button created by midbutton command */
+.midbutton {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+  padding: 10px 20px;
+  background: #222;
+  color: #eee;
+  border: 1px solid #555;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'Fira Mono', 'Courier New', Courier, monospace;
+  font-size: 14px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+.midbutton:hover {
+  background: #333;
 }

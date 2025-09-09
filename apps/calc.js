@@ -2,47 +2,22 @@ window.apps["calc"] = function(container, context) {
   const input = document.createElement("input");
   input.type = "text";
   input.placeholder = "Type math expression (e.g. 2+2)";
-  input.style.width = "100%";
-  input.style.marginBottom = "10px";
-  input.style.fontSize = "16px";
-  input.style.padding = "5px";
-  input.autocomplete = "off";
+  input.className = "app-input app-margin-bottom app-font-large";
 
   const buttonsDiv = document.createElement("div");
-  buttonsDiv.style.marginBottom = "10px";
-  buttonsDiv.style.display = "flex";
-  buttonsDiv.style.gap = "10px";
+  buttonsDiv.className = "app-margin-bottom";
 
   const clearBtn = document.createElement("button");
   clearBtn.textContent = "Clear";
-  clearBtn.style.flex = "1";
-  clearBtn.style.background = "#222";
-  clearBtn.style.color = "#eee";
-  clearBtn.style.border = "1px solid #444";
-  clearBtn.style.cursor = "pointer";
-  clearBtn.style.fontFamily = "monospace";
+  clearBtn.className = "app-button";
 
   buttonsDiv.appendChild(clearBtn);
 
   const output = document.createElement("div");
-  output.style.minHeight = "100px";
-  output.style.background = "#111";
-  output.style.color = "#fff";
-  output.style.padding = "10px";
-  output.style.fontFamily = "monospace";
-  output.style.whiteSpace = "pre-wrap";
-  output.style.overflowY = "auto";
-  output.style.maxHeight = "150px";
+  output.className = "app-output";
 
   const historyDiv = document.createElement("div");
-  historyDiv.style.marginTop = "10px";
-  historyDiv.style.fontSize = "14px";
-  historyDiv.style.color = "#ccc";
-  historyDiv.style.fontFamily = "monospace";
-  historyDiv.style.maxHeight = "150px";
-  historyDiv.style.overflowY = "auto";
-  historyDiv.style.borderTop = "1px solid #444";
-  historyDiv.style.paddingTop = "5px";
+  historyDiv.className = "app-history";
 
   container.appendChild(input);
   container.appendChild(buttonsDiv);
