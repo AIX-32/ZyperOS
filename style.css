@@ -53,19 +53,19 @@ input {
   font-family: monospace;
   padding: 12px 15px;
   border-radius: 15px;
+  height: 30px;
 }
 
 button {
   background-color: #333;
   color: #eee;
   border: 1px solid #666;
-  padding: 12px 20px; /* Match height with input */
+  padding: 12px 20px;
   border-radius: 15px;
   cursor: pointer;
   transition: background-color 0.3s ease;
   font-weight: bold;
-  height: fit-content; /* Ensure proper height */
-  align-self: center; /* Center vertically */
+  align-self: center; 
 }
 
 button:hover {
@@ -301,7 +301,6 @@ input[type="range"]:focus {
   border-color: rgba(100, 100, 100, 0.3) !important;
 }
 
-/* Button created by midbutton command */
 .midbutton {
   position: fixed;
   bottom: 20px;
@@ -321,4 +320,10 @@ input[type="range"]:focus {
 
 .midbutton:hover {
   background: #333;
+}
+
+.togglebutton { 
+  background: #353535;
+  border: 1px solid #474747;
+  height: 50px;
 }
