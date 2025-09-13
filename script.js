@@ -496,11 +496,30 @@ window.apps.matrix = function() {
     }
   });
 
+  // Function to get command line history for AI context
+  function getCommandLineHistory() {
+    const commands = Array.from(output.querySelectorAll("div"));
+    const history = [];
+    
+    commands.forEach(cmd => {
+      const text = cmd.textContent;
+      if (text.startsWith("> ") || text.startsWith("You: ") || text.startsWith("Zyper: ") || text.startsWith("AI is thinking") || text.startsWith("Executing command:") || text.startsWith("Command executed")) {
+        history.push(text);
+      }
+    });
+    
+    // Limit history to last 20 entries to prevent token overflow
+    return history.slice(-20).join("\n");
+  }
+
   // AI command processing function
   async function processAICommand(question) {
     try {
       // Show loading message
       print("AI is thinking...");
+      
+      // Get command line history for context
+      const commandHistory = getCommandLineHistory();
       
       // First AI: General conversation with system context
       const conversationResponse = await puter.ai.chat([
@@ -515,7 +534,10 @@ window.apps.matrix = function() {
           The midbutton command creates a button at the bottom center of the screen.
           Syntax: midbutton (JavaScript code) button title
           Example: midbutton (alert('Hello World!')) Click Me
-          This creates a button labeled "Click Me" that shows an alert when clicked.`
+          This creates a button labeled "Click Me" that shows an alert when clicked.
+          
+          COMMAND LINE HISTORY (for context):
+          ${commandHistory}`
         },
         {
           role: "user",
@@ -533,6 +555,10 @@ window.apps.matrix = function() {
       The available commands are: help, clear, open [app], apps, openall, matrix, ai, midbutton (on click js) [button title]
       The available apps are: notes, calc, chat, scripter, appbuilder, explorer, viewer, browser, theme, taskmgr, clock, uploader, music, ai
       Respond ONLY with the exact command to execute, or "none" if no command is needed. DO NOT use code blocks or any other formatting.
+      
+      COMMAND LINE HISTORY (for context):
+      ${commandHistory}
+      
       Examples:
       User: "open the calculator"
       Response: "open calc"
